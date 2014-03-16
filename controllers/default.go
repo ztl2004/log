@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"github.com/astaxie/beego"
 )
 
@@ -13,3 +14,5 @@ func (this *MainController) Get() {
 	this.Data["Email"] = "astaxie@gmail.com"
 	this.TplNames = "index.tpl"
 }
+
+
