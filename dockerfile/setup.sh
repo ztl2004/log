@@ -2,7 +2,9 @@
 docker build -t arkors:log .
 
 #link log and mysql
-docker run --link arkors:mysql -i -t arkors:log
+docker run --link mysql:db -i -t --name log arkors:log bash
+
+#get mysql information
 
 #mysql container setup
 docker run arkors:log cd $GOPATH/src/log && go build -o main main.go && ./main orm

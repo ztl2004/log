@@ -14,4 +14,3 @@ RUN go get github.com/astaxie/beego
 RUN go get github.com/beego/bee
 RUN go get github.com/astaxie/beego/orm
 RUN cd $GOPATH/src && git clone https://github.com/arkors/log.git
-#RUN cd $GOPATH/src && git clone https://github.com/arkors/log.git
