@@ -8,25 +8,6 @@ import (
 	"log/models"
 )
 
-func init() {
-	
-	dbHost := beego.AppConfig.String("DBHost")
-	dbPort := beego.AppConfig.String("DBPort")
-	dbUser := beego.AppConfig.String("DBUser")
-	dbPass :=beego.AppConfig.String("DBPass")
-	dbName :=beego.AppConfig.String("DBName")
-	
-	dbDSN:=fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8",dbUser,dbPass,dbHost,dbPort,dbName)
-
-	orm.RegisterDriver("mysql", orm.DR_MySQL)
-	orm.RegisterDataBase("default", "mysql", dbDSN) 
-
-	err := orm.RunSyncdb("default", false, true)
-	if err != nil {
-	    fmt.Println(err)
-		}
-}
-
 type LogController struct {
 	beego.Controller
 }
