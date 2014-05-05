@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	_ "github.com/arkors/log/routers"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
 	_ "github.com/go-sql-driver/mysql"
