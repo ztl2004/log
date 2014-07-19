@@ -5,6 +5,7 @@ _ "github.com/go-sql-driver/mysql"
 	"github.com/go-xorm/xorm"
 	"log"
 	"time"
+  "encoding/json"
 )
 
 type Log struct {
@@ -33,5 +34,23 @@ func init() {
 		log.Fatalf("Fail to sync log database: %v\n", err)
 	}
 
-	}
+}
+
+func InsertLog(logJson []byte) []byte {
+    var logModel Log
+    err:=json.Unmarshal(logJson,&logModel)
+    if err!=nil {
+      log.Fatalf("Fail to unmarshal with logJson",err)
+    }
+    _,err=x.Insert(logModel)
+
+    if err!=nil {
+      log.Fatalf("Fail to insert with xorm",err)
+    }
+
+    reModel:=new(ReModel)
+    reModel.Id=logModel.Id
+    reModel.App=logModel.App
+    redata,_:=json.Marshal(reModel)
+    return  redata
 }
