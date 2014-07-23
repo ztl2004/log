@@ -9,7 +9,7 @@ import (
 )
 
 type Log struct {
-	Id        int       `xorm:"int pk 'id'"`
+	Id        int       `xorm:"int pk autoincr 'id'"`
 	App       int       `xorm:"int not null 'app'"`
 	Level     string    `xorm:"text not null 'level'"`
 	Action    string    `xorm:"text not null 'action'"`
@@ -36,7 +36,7 @@ func init() {
 
 }
 
-func InsertLog(logJson []byte) []byte {
+func InsertLog(logJson []byte) *ReModel {
 	var logModel Log
 	err := json.Unmarshal(logJson, &logModel)
 	if err != nil {
@@ -51,6 +51,6 @@ func InsertLog(logJson []byte) []byte {
 	reModel := new(ReModel)
 	reModel.Id = logModel.Id
 	reModel.App = logModel.App
-	redata, _ := json.Marshal(reModel)
-	return redata
+	//redata, _ := json.Marshal(reModel)
+	return reModel
 }

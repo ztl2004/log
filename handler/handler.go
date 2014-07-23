@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"github.com/arkors/log/model"
 	"github.com/martini-contrib/render"
 	"io/ioutil"
@@ -10,7 +9,6 @@ import (
 )
 
 func CreateLog(r render.Render, res *http.Request) {
-	fmt.Println("Enter Create Log Modle.......")
 	data, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		r.JSON(http.StatusBadRequest, map[string]interface{}{"error": "Fail to read request body!"})
@@ -20,8 +18,6 @@ func CreateLog(r render.Render, res *http.Request) {
 		r.JSON(http.StatusBadRequest, map[string]interface{}{"error": "Data can't be nil!"})
 		log.Fatalf("Data can't be nil", data)
 	}
-
-	fmt.Println("Enter Create Log Modle")
 	redata := model.InsertLog(data)
-	r.JSON(http.StatusOK, redata)
+	r.JSON(http.StatusOK, map[string]interface{}{"id": redata.Id, "app": redata.App})
 }
