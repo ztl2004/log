@@ -2,10 +2,11 @@ package model
 
 import (
 	"encoding/json"
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/go-xorm/xorm"
 	"log"
 	"time"
+
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/go-xorm/xorm"
 )
 
 type Log struct {

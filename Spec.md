@@ -7,21 +7,24 @@
 #### Email API Specification
 
 
-##### POST /v1/:app/log
+##### POST /v1/log
 
 记录 application 完整流程的全部日志,由系统的各个模块调用
 
 ###### Examole Request
 ```
-POST /v1/233/log HTTP/1.1
+POST /v1/log HTTP/1.1
 Host: log.arkors.com
 X-Arkors-application-Log: 5024442115e7bd738354c1fac662aed5
 X-Arkors-application-Client: xxx.xx.xx.xxx,Email
 Accept: application/json
-{
-  "level":"debug"
-  "aciton":"insert into mysql finished"
-  "parent":"5024442115e7bd738354c1fac662aed4"
+{ 
+  "app"       : "233"
+  "level"     : "DEBUG"
+  "fromModel" : "OAUTH"
+  "aciton"    : "insert into mysql finished"
+  "log"       : "5024442115e7bd738354c1fac662aed5"
+  "parentLog" : "5024442115e7bd738354c1fac662aed4"
 }
 
 ```
