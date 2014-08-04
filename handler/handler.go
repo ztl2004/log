@@ -1,11 +1,12 @@
 package handler
 
 import (
-	"github.com/arkors/log/model"
-	"github.com/martini-contrib/render"
 	"io/ioutil"
 	"log"
 	"net/http"
+
+	"github.com/arkors/log/model"
+	"github.com/martini-contrib/render"
 )
 
 func CreateLog(r render.Render, res *http.Request) {
@@ -18,6 +19,6 @@ func CreateLog(r render.Render, res *http.Request) {
 		r.JSON(http.StatusBadRequest, map[string]interface{}{"error": "Data can't be nil!"})
 		log.Fatalf("Data can't be nil", data)
 	}
-	redata := model.InsertLog(data)
-	r.JSON(http.StatusOK, map[string]interface{}{"id": redata.Id, "app": redata.App})
+	model.InsertLog(data)
+	r.JSON(http.StatusOK, nil)
 }
