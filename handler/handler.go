@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/arkors/log/logmodel"
+	"github.com/arkors/log/model"
 	"github.com/martini-contrib/render"
 )
 
@@ -18,7 +18,7 @@ func CreateLog(r render.Render, res *http.Request) {
 		r.JSON(http.StatusBadRequest, map[string]interface{}{"error": "Data can't be nil!"})
 		return
 	}
-	logmodel.InsertLog(data)
+	model.InsertLog(data)
 	r.JSON(http.StatusOK, nil)
 	return
 }

@@ -1,4 +1,4 @@
-package logmodel
+package model
 
 import (
 	"bytes"
