@@ -1,14 +1,18 @@
 package model
 
 import (
+	"bufio"
 	"bytes"
 	"crypto/md5"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
+	"strings"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -36,14 +40,15 @@ var LevelMapping = map[string]LEVEL{
 }
 
 type Log struct {
-	Id        int       `xorm:"int"`
-	App       int64     `xorm:"int not null 'app'"`
-	Level     string    `xorm:"text not null 'level'"`
-	Action    string    `xorm:"text not null 'action'"`
-	Module    string    `xorm:"text not null 'module'"`
-	Log       string    `xorm:"text not null 'log'"`
-	ParentLog string    `xorm:"text 'parentLog'"`
-	Created   time.Time `xorm:"created"`
+	Id          int       `xorm:"int"`
+	App         int64     `xorm:"int not null 'app'"`
+	Level       string    `xorm:"text not null 'level'"`
+	Message     string    `xorm:"text not null 'message'"`
+	Module      string    `xorm:"text not null 'module'"`
+	RootLogId   string    `xorm:"text not null 'root_log_id'"`
+	LogId       string    `xorm:"text not null 'log_id'"`
+	ParentLogId string    `xorm:"text 'parent_log_id'"`
+	Created     time.Time `xorm:"created"`
 }
 
 var x *xorm.Engine
@@ -78,7 +83,7 @@ func InsertLog(logJson []byte) {
 	return
 }
 
-func WriteLog(logChan *chan string, sysLogLevel string, logLevel string, app int64, action string, module string, logId string) string {
+func WriteLog(logChan *chan string, sysLogLevel string, logLevel string, app int64, message string, module string, logId string, rootLogId string) string {
 	if LevelMapping[sysLogLevel] >= LevelMapping[logLevel] {
 		parentLogId := logId
 		md5String := fmt.Sprintf("%v%v%v", logId, module, string(time.Now().Unix()))
@@ -89,11 +94,13 @@ func WriteLog(logChan *chan string, sysLogLevel string, logLevel string, app int
 		log := new(Log)
 		log.App = app
 		log.Level = sysLogLevel
-		log.Action = action
+		log.Message = message
 		log.Module = module
-		log.Log = logId
-		log.ParentLog = parentLogId
+		log.LogId = logId
+		log.RootLogId = rootLogId
+		log.ParentLogId = parentLogId
 		logJson, _ := json.Marshal(log)
+		go WriteLogFile(logId, string(logJson))
 		*logChan <- string(logJson)
 		return logId
 	}
@@ -119,7 +126,42 @@ func Sendlog(logChan *chan string) {
 			if err != nil {
 				fmt.Println(err)
 			}
-			fmt.Println(string(data))
+			go changeLogStatus(log.LogId, "A")
+		} else {
+
+		}
+	}
+}
+
+func WriteLogFile(logId string, log string) {
+	filename := string(([]byte(time.Now().Format(time.RFC3339)))[:10]) + ".log"
+	f, err := os.OpenFile(filename, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0660)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+	w := bufio.NewWriter(f)
+	w.Write([]byte(logId) + "|")
+	w.Write([]byte(log) + "|")
+	w.Write([]byte(I) + "|")
+	w.Write([]byte(I) + "1\n")
+	w.Flush()
+}
+
+func changelogStatus(logId string, status string) {
+	filename := string(([]byte(time.Now().Format(time.RFC3339)))[:10]) + ".log"
+	f, err := os.Open(filename)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+	buff := bufio.NewReader(f)
+	for {
+		line, err := buff.ReadString("\n")
+		if err != nil || io.EOF == err {
+			break
+		}
+		if strings.HasPrefix(line, logId) {
 		}
 	}
 }
