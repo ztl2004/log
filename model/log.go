@@ -7,12 +7,9 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -72,14 +69,15 @@ func InsertLog(logJson []byte) {
 	var logModel Log
 	err := json.Unmarshal(logJson, &logModel)
 	if err != nil {
-		log.Fatalf("Fail to unmarshal with logJson", err)
+		fmt.Printf("%s,%v\n", "Fail to unmarshal with logJson", err)
+		return
 	}
 	_, err = x.Insert(logModel)
 
 	if err != nil {
-		log.Fatalf("Fail to insert with xorm", err)
+		fmt.Printf("%s,%v\n", "Fail to insert with xorm", err)
+		return
 	}
-
 	return
 }
 
@@ -107,12 +105,12 @@ func WriteLog(logChan *chan string, sysLogLevel string, logLevel string, app int
 	return ""
 }
 
-func Sendlog(logChan *chan string) {
+func Sendlog(logChan *chan string, url string) {
 	for {
 		log_data := <-(*logChan)
 		var log Log
 		json.Unmarshal([]byte(log_data), &log)
-		request, _ := http.NewRequest("POST", "http://log.arkors.com/v1/log", bytes.NewReader([]byte(log_data)))
+		request, _ := http.NewRequest("POST", url, bytes.NewReader([]byte(log_data)))
 		request.Header.Set("X-Arkors-Application-Client", "127.0.0.1,OAUTH")
 		request.Header.Set("Accept", "application/json")
 		client := &http.Client{}
@@ -122,46 +120,37 @@ func Sendlog(logChan *chan string) {
 			break
 		}
 		if resp.StatusCode == http.StatusOK {
-			data, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				fmt.Println(err)
-			}
-			go changeLogStatus(log.LogId, "A")
+			WriteLogStatus(log.LogId, "A")
 		} else {
-
+			WriteLogStatus(log.LogId, "X")
 		}
 	}
 }
 
 func WriteLogFile(logId string, log string) {
 	filename := string(([]byte(time.Now().Format(time.RFC3339)))[:10]) + ".log"
-	f, err := os.OpenFile(filename, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0660)
+	f, err := os.OpenFile("logFiles/"+filename, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0660)
 	if err != nil {
 		panic(err)
 	}
 	defer f.Close()
 	w := bufio.NewWriter(f)
-	w.Write([]byte(logId) + "|")
-	w.Write([]byte(log) + "|")
-	w.Write([]byte(I) + "|")
-	w.Write([]byte(I) + "1\n")
+	w.Write([]byte(logId + "|"))
+	w.Write([]byte(log + "|"))
+	w.Write([]byte("I" + "|"))
+	w.Write([]byte("1\n"))
 	w.Flush()
 }
 
-func changelogStatus(logId string, status string) {
-	filename := string(([]byte(time.Now().Format(time.RFC3339)))[:10]) + ".log"
-	f, err := os.Open(filename)
+func WriteLogStatus(logId string, status string) {
+	filename := string(([]byte(time.Now().Format(time.RFC3339)))[:10]) + "-receieve.log"
+	f, err := os.OpenFile("logFiles/"+filename, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0660)
 	if err != nil {
 		panic(err)
 	}
 	defer f.Close()
-	buff := bufio.NewReader(f)
-	for {
-		line, err := buff.ReadString("\n")
-		if err != nil || io.EOF == err {
-			break
-		}
-		if strings.HasPrefix(line, logId) {
-		}
-	}
+	w := bufio.NewWriter(f)
+	w.Write([]byte(logId + "|"))
+	w.Write([]byte(status + "\n"))
+	w.Flush()
 }
